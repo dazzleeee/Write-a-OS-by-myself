@@ -16,15 +16,15 @@
 loader:
     mov $kernel_stack, %esp #kernel stack is kernel's start stack address,move esp(stack top) to it
     call _callConstructors
-    push %eax
-    push %ebx
+    push %eax   #eax存储这BootLoader的起始地址
+    push %ebx   #ebx存储的是magicnumber
     call _kernelMain
 
 _stop:
-    cli
-    hlt
-    jmp _stop
+    cli #关掉中断
+    hlt #CPU停机
+    jmp _stop #保持程序运行
 
-.section .bss
+.section .bss # .bss存储未初始化的全局变量和静态变量，会被清零。
 .space 2 * 1024 * 1024
 kernel_stack:
