@@ -13,7 +13,7 @@ extern "C" void callConstructors(){     //在c++中，init（）fini（）分别
         (*i)();
 }
 
-extern "C" void kernelMain(void* multiboot_structure, unsigned int magic_number) {
+extern "C" void kernelMain(void* multiboot_structure, unsigned int magic_number) { //multiboot_structure包含关于硬件、内存等信息；接收magicnumber验证是否是合法的BootLoader。
     printf((char*)"hello world!");
     while (1);
 }
