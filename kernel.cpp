@@ -17,3 +17,7 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magic_number)
     printf((char*)"hello world!");
     while (1);
 }
+
+
+//符号表（Symbol Table）是一个记录了程序中函数、变量和其他符号名称以及其对应地址或其他信息的表格。
+//在编译后的可执行文件中，符号表可以帮助调试器和链接器定位和处理各种符号。 编译后可以发现kernelmain被编译器作了些许修改。
