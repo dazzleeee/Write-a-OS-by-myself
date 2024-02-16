@@ -1,5 +1,5 @@
 void printf(char* str) {
-    unsigned short* VideoMemory = (unsigned short*)0xb8000; // (unsigned short*) make 0xb8000 to be a address,which is the first dress of video memory.
+    unsigned short* VideoMemory = ((uint16_t*)0xb8000; // (unsigned short*) make 0xb8000 to be a address,which is the first dress of video memory.
     for (int i = 0; str[i]; i++) {   //字符串的末尾是/0
         VideoMemory[i] = (VideoMemory[i] & 0xFF00) | str[i];     //VideoMemory[i] denote the data which number i ,from the start address of 0xb800.将显存地址与字符串进行或运算，保留字符及显示属性。
     }                                                            //将要打印的字符写入地址的低16位
@@ -13,7 +13,7 @@ extern "C" void callConstructors(){     //在c++中，init（）fini（）分别
         (*i)();
 }
 
-extern "C" void kernelMain(void* multiboot_structure, unsigned int magic_number) { //multiboot_structure包含关于硬件、内存等信息；接收magicnumber验证是否是合法的BootLoader。
+extern "C" void kernelMain(void* multiboot_structure, uint32_t magic_number) { //multiboot_structure包含关于硬件、内存等信息；接收magicnumber验证是否是合法的BootLoader。
     printf((char*)"hello world!");
     while (1);
 }
