@@ -21,3 +21,42 @@ extern "C" void kernelMain(void* multiboot_structure, unsigned int magic_number)
 
 //符号表（Symbol Table）是一个记录了程序中函数、变量和其他符号名称以及其对应地址或其他信息的表格。
 //在编译后的可执行文件中，符号表可以帮助调试器和链接器定位和处理各种符号。 编译后可以发现kernelmain被编译器作了些许修改。
+
+//用这个printf函数可以实现对整块屏幕的控制:
+
+void printf(const char *str)
+{
+    // screen address
+    static uint16_t *VideoMemory = (uint16_t*)0xb8000;   #强制转换为16位
+    static uint8_t x = 0, y = 0;   #x和y代表光标位置，屏幕是宽80字节*高25行
+
+    for (int i = 0; str[i]; i++)
+    {
+        switch (str[i])
+        {
+            case '\n':   #换行
+                y++;
+                x = 0;
+                break;
+            default:
+                VideoMemory[80 * y + x] = (VideoMemory[80 * y + x] & 0xFF00) | str[i];     #VideoMemory[80 * y + x]来访问第y行第x位
+                x++;
+        }
+
+        if (x >= 80) #换行，因为超过了屏幕最大宽度
+        {
+            x = 0;
+            y++;
+        }
+        if (y >= 25)  #如果超出了该屏幕所在的页面，
+        {
+            for (y = 0; y < 25; y++)
+            {
+                for (x = 0; x < 80; x++)
+                    VideoMemory[i] = (VideoMemory[i] & 0xFF00) | ' ';   #将字符设置为空
+            }
+            x = 0;   #光标回到左上角
+            y = 0;
+        }
+    }
+}
