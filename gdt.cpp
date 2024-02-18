@@ -82,8 +82,8 @@ uint32_t GlobalDescriptorTable::SegmentDescriptor::Limit()  //实现limit方法�
     uint8_t *target = (uint8_t *)this;
     uint32_t result = target[6] & 0xf;  //取4位
     result = (result << 8) + target[1];
-    result = (result << 8) + target[0];
-    if ((target[6] & 0xc0) != 0xc0)
-        result = (result << 12) | 0xfff;
+    result = (result << 8) + target[0];//左移8位，拼接
+    if ((target[6] & 0xc0) != 0xc0) //判断第 6 个字节的高 2 位是否为 11，即检查段描述符的类型。如果不是 11，说明是段模式，不是段页
+        result = (result << 12) | 0xfff;// 左移12位，再用1填满后12位，把页换成字节
     return result;
 }
