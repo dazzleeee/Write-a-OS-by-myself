@@ -1,22 +1,7 @@
 // os/gdt.cpp
 #include "gdt.h"
 
-GlobalDescriptorTable::GlobalDescriptorTable()    //这里是实现构造函数，赋予初值
-    : nullSegmentDescriptor(0, 0, 0),  //实例化四种段描述符
-      unusedSegmentDescriptor(0, 0, 0),
-      codeSegmentDescriptor(0, 64 * 1024 * 1024, 0x9a), //limit为4MB，0x9a是1001 1010
-      dataSegmentDescriptor(0, 64 * 1024 * 1024, 0x92)  //0x92 = 1001 0010 设定access位。
-{
-    uint32_t i[2];
-    i[0] = sizeof(GlobalDescriptorTable) << 16;
-    i[1] = (uint32_t)this;
-    asm volatile("lgdt (%0)"                             //lgdt要把GDT表的地址和大小放入相应的GDTR寄存器。volatile表示不要让编译器优化。(%0 是占位符，表示第一个操作数) 
-            :                               /* outputs */
-            : "p" (((uint8_t *)i) + 2)      /* inputs */ i数组的起始地址向后2个字节，即i[1]保存的是GDT表的起始地址，p表示该操作数是一个指向内存的指针。
-            );
-}
 
-GlobalDescriptorTable::~GlobalDescriptorTable() { }
 
 
 GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint32_t limit, uint8_t type)   //这里是内涵类的类方法的实现，根据传入的base、limit、type给段描述符的各个字段赋值
@@ -87,3 +72,31 @@ uint32_t GlobalDescriptorTable::SegmentDescriptor::Limit()  //实现limit方法�
         result = (result << 12) | 0xfff;// 左移12位，再用1填满后12位，把页换成字节
     return result;
 }
+
+GlobalDescriptorTable::GlobalDescriptorTable()    //这里是实现构造函数，赋予初值
+    : nullSegmentDescriptor(0, 0, 0),  //实例化四种段描述符
+      unusedSegmentDescriptor(0, 0, 0),
+      codeSegmentDescriptor(0, 64 * 1024 * 1024, 0x9a), //limit为4MB，0x9a是1001 1010
+      dataSegmentDescriptor(0, 64 * 1024 * 1024, 0x92)  //0x92 = 1001 0010 设定access位。
+{
+    uint32_t i[2];
+    i[0] = sizeof(GlobalDescriptorTable) << 16;
+    i[1] = (uint32_t)this;
+    asm volatile("lgdt (%0)"                             //lgdt要把GDT表的地址和大小放入相应的GDTR寄存器。volatile表示不要让编译器优化。(%0 是占位符，表示第一个操作数) 
+            :                               /* outputs */
+            : "p" (((uint8_t *)i) + 2)      /* inputs */ i数组的起始地址向后2个字节，即i[1]保存的是GDT表的起始地址，p表示该操作数是一个指向内存的指针。
+            );
+}
+
+GlobalDescriptorTable::~GlobalDescriptorTable() { }
+
+uint16_t GlobalDescriptorTable::getDataSegmentSelector() //返回相对GDT表地址偏移量
+{
+    return ((uint8_t *)&dataSegmentDescriptor - (uint8_t *)this) >> 3;   //&dataSegmentDescriptor 获取数据段描述符的地址，然后通过将其强制转换为 uint8_t 指针类型，与当前对象地址 this 进行指针运算。
+}
+
+uint16_t GlobalDescriptorTable::getCodeSegmentSelector()
+{
+    return ((uint8_t *)&codeSegmentDescriptor - (uint8_t *)this) >> 3;  //右移 3 位，相当于除以 8。这是因为段选择子的格式中，偏移量需要除以 8 才能得到正确的值。
+}
+
