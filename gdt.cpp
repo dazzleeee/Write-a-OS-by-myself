@@ -2,17 +2,17 @@
 #include "gdt.h"
 
 GlobalDescriptorTable::GlobalDescriptorTable()    //这里是实现构造函数，赋予初值
-    : nullSegmentDescriptor(0, 0, 0),
+    : nullSegmentDescriptor(0, 0, 0),  //实例化四种段描述符
       unusedSegmentDescriptor(0, 0, 0),
-      codeSegmentDescriptor(0, 64 * 1024 * 1024, 0x9a),
-      dataSegmentDescriptor(0, 64 * 1024 * 1024, 0x92)
+      codeSegmentDescriptor(0, 64 * 1024 * 1024, 0x9a), //limit为4MB，0x9a是1001 1010
+      dataSegmentDescriptor(0, 64 * 1024 * 1024, 0x92)  //0x92 = 1001 0010 设定access位。
 {
     uint32_t i[2];
     i[0] = sizeof(GlobalDescriptorTable) << 16;
     i[1] = (uint32_t)this;
-    asm volatile("lgdt (%0)"
+    asm volatile("lgdt (%0)"                             //lgdt要把GDT表的地址和大小放入相应的GDTR寄存器。volatile表示不要让编译器优化。(%0 是占位符，表示第一个操作数) 
             :                               /* outputs */
-            : "p" (((uint8_t *)i) + 2)      /* inputs */
+            : "p" (((uint8_t *)i) + 2)      /* inputs */ i数组的起始地址向后2个字节，即i[1]保存的是GDT表的起始地址，p表示该操作数是一个指向内存的指针。
             );
 }
 
